@@ -6,10 +6,9 @@ import time
 from pathlib import Path
 
 import jax
-import jax.numpy as jnp
 
 from gpu_ehl.elasticity import load_or_build_kernel
-from gpu_ehl.geometry import make_radial_grid, make_time_grid
+from gpu_ehl.geometry import make_radial_grid
 from gpu_ehl.solver import simulate_single_setup
 
 # Target case
@@ -36,7 +35,6 @@ def main() -> None:
     dr = float(r[1] - r[0])
     print("Loading/building elastic kernel...")
     kernel = load_or_build_kernel(NR, LR)
-    Time = make_time_grid(DELTA_T, NT, NT_INI)[1]
 
     # Clean any previous trace so start_trace does not complain
     if JAX_TRACE_DIR.exists():

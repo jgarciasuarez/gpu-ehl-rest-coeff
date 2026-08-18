@@ -109,7 +109,8 @@ def download_dataset(destination: Path, record_id: str | None = None) -> None:
             f"{destination.stat().st_size}"
         )
 
-    logger.info("Dataset saved to %s (%s)", destination, _format_size(destination.stat().st_size))
+    size_str = _format_size(destination.stat().st_size)
+    logger.info("Dataset saved to %s (%s)", destination, size_str)
 
 
 def main() -> int:

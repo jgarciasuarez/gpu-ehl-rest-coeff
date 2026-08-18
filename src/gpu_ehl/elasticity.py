@@ -1,7 +1,6 @@
 """Elastic half-space kernel matrix construction and caching."""
 
 import logging
-import os
 from pathlib import Path
 from typing import Optional
 

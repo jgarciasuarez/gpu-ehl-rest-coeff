@@ -21,7 +21,7 @@ _repo_root = Path(__file__).resolve().parents[1]
 if str(_repo_root / "src") not in sys.path:
     sys.path.insert(0, str(_repo_root / "src"))
 
-from gpu_ehl.sweep import make_parameter_grid
+from gpu_ehl.sweep import make_parameter_grid  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,10 @@ def extract_sample(
     S_flat = sorted({float(s) for s in S_flat})
 
     # Sanity-check that the requested sample Stokes exist in the full grid.
-    missing_stokes = [s for s in SAMPLE_STOKES if not any(abs(s - ss) < 1e-6 for ss in S_flat)]
+    missing_stokes = [
+        s for s in SAMPLE_STOKES
+        if not any(abs(s - ss) < 1e-6 for ss in S_flat)
+    ]
     if missing_stokes:
         logger.warning("Requested sample Stokes not in full grid: %s", missing_stokes)
 
