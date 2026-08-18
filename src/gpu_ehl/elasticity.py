@@ -42,7 +42,7 @@ def kernel_path(nr: int, lr: float, cache_dir: Optional[Path] = None) -> Path:
     """
     if cache_dir is None:
         cache_dir = _default_cache_dir()
-    return cache_dir / f"kernel_matrix_NR{nr}_LR{lr:.1f}_v2.npy"
+    return cache_dir / f"kernel_matrix_NR{nr}_LR{lr:.1f}.npy"
 
 
 def _k_integrand(x: float, ri: float) -> float:
