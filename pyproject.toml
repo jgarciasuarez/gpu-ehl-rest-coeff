@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpu-ehl"
+version = "0.1.0"
+description = "GPU-accelerated elastohydrodynamic lubrication solver for power-law elastic indenters"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Joaquin Garcia-Suarez"},
+]
+keywords = [
+    "elastohydrodynamic lubrication",
+    "impact mechanics",
+    "computational fluid dynamics",
+    "JAX",
+    "GPU",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "numpy>=1.24",
+    "jax>=0.4",
+    "scipy>=1.10",
+    "h5py>=3.8",
+    "matplotlib>=3.7",
+    "tqdm>=4.65",
+]
+
+[project.optional-dependencies]
+cuda = ["jax[cuda]>=0.4"]
+test = ["pytest>=7.0", "pytest-cov>=4.0"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5",
+    "pymupdf>=1.28",
+    "plotly>=5.0",
+]
+
+[project.scripts]
+jax-ehl = "gpu_ehl.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/jgarciasuarez/gpu-ehl-rest-coeff"
+Repository = "https://github.com/jgarciasuarez/gpu-ehl-rest-coeff"
+Issues = "https://github.com/jgarciasuarez/gpu-ehl-rest-coeff/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

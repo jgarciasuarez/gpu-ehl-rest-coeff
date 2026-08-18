@@ -1,0 +1,3 @@
+# Ignore all profiling artifacts (large trace files, summaries from cluster runs)
+*
+!.gitignore
