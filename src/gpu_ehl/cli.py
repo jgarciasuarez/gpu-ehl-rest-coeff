@@ -65,7 +65,7 @@ def _add_common_args(parser: argparse.ArgumentParser) -> None:
 
 def _build_kernel_and_grid(args):
     r = make_radial_grid(args.nr, args.lr)
-    dr = float(args.lr / args.nr)
+    dr = float(args.lr / (args.nr - 1))
     kernel = load_or_build_kernel(args.nr, args.lr, cache_dir=args.cache_dir)
     return kernel, r, dr
 

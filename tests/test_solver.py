@@ -14,7 +14,7 @@ def coarse_grid():
     nr = 64
     lr = 6.0
     r = make_radial_grid(nr, lr)
-    dr = lr / nr
+    dr = lr / (nr - 1)
     kernel = load_or_build_kernel(nr, lr)
     return r, dr, kernel
 
