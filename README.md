@@ -8,7 +8,7 @@
 [![Slurm](https://img.shields.io/badge/Slurm-workload%20manager-blue)](https://slurm.schedmd.com/)
 [![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21995894.svg)](https://doi.org/10.5281/zenodo.21995894)
 
-> **Problem:** When a power-law elastic indenter impacts a thin viscous fluid film, the coupled elastohydrodynamic rebound is governed by the Stokes number and the indenter shape exponent. This repository provides the data, solver, and figure-reproduction pipeline for our study of that restitution map.
+> **The problem we are addressing:** When a power-law elastic object moves through a thin viscous fluid film towards a rigid substrate, the coupled elastohydrodynamic process is governed by the Stokes number and the indenter shape exponent. This repository provides the data, solver, and figure-reproduction pipeline for our study of the restitution coefficient as a function of Stokes number and indenter shape.
 
 ## Architecture
 
@@ -22,13 +22,13 @@
 ```
 
 - `src/gpu_ehl/` — modular JAX solver (geometry, elasticity, lubrication, dynamics, sweep, I/O)
-- `data/` — sample dataset for CI/demos; full dataset fetched via `data/download_data.py`
-- `paper/figures/scripts/` — scripts that reproduce every paper figure
+- `data/` — sample dataset for CI/demos; full dataset can be fetched via `data/download_data.py`
+- `paper/figures/scripts/` — scripts that reproduce paper figures
 - `notebooks/` — interactive exploration and reproduction:
   - `01_reproduce_figures.ipynb` — regenerate the paper figures from the sample dataset.
-  - `02_explore_restitution_map.ipynb` — interactive 3D restitution map + 2D map view.
+  - `02_explore_restitution_map.ipynb` — interactive 3D restitution map.
   - `03_solver_demo_convergence.ipynb` — run the solver and check grid convergence.
-  - `04_profiling_rationale.ipynb` — analyze GPU profiling data and justify the CUDA optimization target.
+  - `04_profiling_rationale.ipynb` — analyze GPU profiling data.
 
 ## Project scale
 
@@ -39,7 +39,7 @@
 | Shape exponents | `1.05` to `10.0` |
 | Radial grid | `NR = 3000`, domain `LR = 6.0` |
 | GPU hardware | NVIDIA H100 on the Kuma cluster at EPFL |
-| Final dataset | ~1.1 GB (`parametric_study_final.h5`) |
+| Final dataset | ~300 MB (`parametric_study_final.h5`, Zenodo) |
 | Sample dataset | ~27 MB, 13 simulations (`data/sample/parametric_sample.h5`) |
 
 ## Quickstart
@@ -58,7 +58,7 @@ For GPU execution, ensure JAX is installed with the CUDA backend (`jax[cuda]`).
 
 ### 2. Download the full dataset
 
-The full dataset (`parametric_study_final.h5`, ~1.1 GB) is archived on Zenodo:
+The full dataset (`parametric_study_final.h5`, ~0.3 GB) is archived on Zenodo:
 [![DOI 10.5281/zenodo.21995894](https://zenodo.org/badge/DOI/10.5281/zenodo.21995894.svg)](https://doi.org/10.5281/zenodo.21995894)
 
 ```bash
@@ -96,9 +96,9 @@ is available now. The dataset is archived on Zenodo with DOI
 
 If you use this work, please cite:
 
-> Joaquin Garcia-Suarez et al., *Restitution of power-law elastic indenters in fluid-mediated impact*, Physics of Fluids (2026).
+> Joaquin Garcia-Suarez ... (TBD)
 
-DOI links for the paper will be added once the manuscript is published.
+DOI links for the paper:  (will be added once the manuscript is published).
 
 ## License
 
