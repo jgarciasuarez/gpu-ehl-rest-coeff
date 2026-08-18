@@ -12,15 +12,6 @@
 
 ## Architecture
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  Parameter  │ --> │  JAX/GPU    │ --> │  HDF5       │ --> │  Figure     │
-│  grid       │     │  solver     │     │  dataset    │     │  scripts    │
-└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
-      ^                    |                  |                    |
-      └──── Slurm sweep ───┘                  └──── notebooks ─────┘
-```
-
 - `src/gpu_ehl/` — modular JAX solver (geometry, elasticity, lubrication, dynamics, sweep, I/O)
 - `data/` — sample dataset for CI/demos; full dataset can be fetched via `data/download_data.py`
 - `paper/figures/scripts/` — scripts that reproduce paper figures
