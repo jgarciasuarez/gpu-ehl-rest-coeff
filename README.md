@@ -40,8 +40,21 @@
 ```bash
 git clone https://github.com/jgarciasuarez/gpu-ehl-rest-coeff.git
 cd gpu-ehl-rest-coeff
+```
+
+For `conda` users
+```bash
 conda env create -f environment.yml
 conda activate gpu-ehl
+pip install -e ".[dev]"
+```
+
+Otherwise 
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
 pip install -e ".[dev]"
 ```
 
