@@ -39,6 +39,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+cpu = ["jax[cpu]>=0.4"]
 cuda = ["jax[cuda]>=0.4"]
 test = ["pytest>=7.0", "pytest-cov>=4.0"]
 dev = [

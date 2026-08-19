@@ -19,12 +19,12 @@
   - `01_reproduce_figures.ipynb` — regenerate the paper figures from the sample dataset.
   - `02_explore_restitution_map.ipynb` — interactive 3D restitution map.
   - `03_solver_demo_convergence.ipynb` — run the solver and check grid convergence.
-  - `04_profiling_rationale.ipynb` — analyze GPU profiling data.
+  - `04_profiling.ipynb` — analyze GPU profiling data.
 
 ## Project scale
 
 | Metric | Value |
-|---|---|
+| --- | --- |
 | Simulations | 130 (13 Stokes numbers × 10 shape exponents) |
 | Stokes numbers | `10^1` to `10^4` |
 | Shape exponents | `1.05` to `10.0` |
@@ -42,20 +42,23 @@ git clone https://github.com/jgarciasuarez/gpu-ehl-rest-coeff.git
 cd gpu-ehl-rest-coeff
 ```
 
-For `conda` users
+Conda users:
+
 ```bash
 conda env create -f environment.yml
 conda activate gpu-ehl
 pip install -e ".[dev]"
 ```
 
-Otherwise 
+Pip users:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-pip install -e ".[dev]"
+pip install -e ".[dev,cpu]"
+# or on NVIDIA GPU:
+pip install -e ".[dev,cuda]"
 ```
 
 For GPU execution, ensure JAX is installed with the CUDA backend (`jax[cuda]`).
