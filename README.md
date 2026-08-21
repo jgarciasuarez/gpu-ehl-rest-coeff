@@ -99,6 +99,9 @@ research pipeline — raw parametric sweep, post-processing, and figure scripts 
 is available now. The dataset is archived on Zenodo with DOI
 [10.5281/zenodo.21995894](https://doi.org/10.5281/zenodo.21995894).
 
+This solver is an outgrowth of V. Bertin's implementation, see [github.com/vincent-bertin/elastohydrodynamic-bouncing](https://github.com/vincent-bertin/elastohydrodynamic-bouncing), 
+which in turn implemented the semi-implicit EHL solver proposed by [Liu *et al.*](https://pubs.rsc.org/sm/article/18/6/1219/748751/Lubricated-soft-normal-elastic-contact-of-a-sphere)
+
 ## Citation
 
 If you use this work, please cite:
