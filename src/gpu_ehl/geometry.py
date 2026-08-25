@@ -66,8 +66,6 @@ def initial_gap_velocity(
     """
     D0 = 1.0
     t1 = Time_ini[0]
-    sign_factor = jnp.where(exponent % 2 == 1, jnp.sign(Time_ini), 1.0)
-    time_pow = sign_factor * (jnp.abs(Time_ini) ** exponent)
-    D_ini = D0 - (Time_ini - time_pow / (2.0 * t1))
+    D_ini = D0 - (Time_ini - (Time_ini**2) / (2.0 * t1))
     V_ini = -1.0 + Time_ini / t1
     return D_ini, V_ini
