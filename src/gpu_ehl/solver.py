@@ -48,6 +48,7 @@ def simulate_single_setup(
         ``Min_h``, ``D``, ``V``, ``w``, ``p``. Each value has shape
         ``(num_snapshots, ...)``.
     """
+    # initialization phase: shape agnostic
     Time_ini, _ = make_time_grid(delta_t, nt, nt_ini)
     D_ini, V_ini = initial_gap_velocity(Time_ini)
 

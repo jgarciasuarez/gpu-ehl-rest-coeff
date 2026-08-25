@@ -53,8 +53,9 @@ def initial_gap_velocity(
     """Prescribed gap and velocity during the initialization phase.
 
     The approach velocity is a linear ramp from zero at ``t1`` to ``-1`` at
-    ``t = 0``. The corresponding gap history is therefore a parabola
-    independent of the indenter shape exponent.
+    ``t = 0``.
+    The corresponding gap history is therefore a parabola always, 
+    independent of the indenter shape exponent!!! 
 
     Parameters
     ----------
