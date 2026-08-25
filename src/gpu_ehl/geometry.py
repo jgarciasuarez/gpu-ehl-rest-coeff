@@ -48,16 +48,18 @@ def make_time_grid(
 
 
 def initial_gap_velocity(
-    Time_ini: jnp.ndarray, exponent: float
+    Time_ini: jnp.ndarray,
 ) -> tuple[jnp.ndarray, jnp.ndarray]:
     """Prescribed gap and velocity during the initialization phase.
+
+    The approach velocity is a linear ramp from zero at ``t1`` to ``-1`` at
+    ``t = 0``. The corresponding gap history is therefore a parabola
+    independent of the indenter shape exponent.
 
     Parameters
     ----------
     Time_ini : jnp.ndarray
         Initialization time grid; its first element is ``t1 < 0``.
-    exponent : float
-        Power-law shape exponent.
 
     Returns
     -------
@@ -66,6 +68,6 @@ def initial_gap_velocity(
     """
     D0 = 1.0
     t1 = Time_ini[0]
-    D_ini = D0 - (Time_ini - (Time_ini**2) / (2.0 * t1))
+    D_ini = D0 - Time_ini + (Time_ini ** 2) / (2.0 * t1)
     V_ini = -1.0 + Time_ini / t1
     return D_ini, V_ini

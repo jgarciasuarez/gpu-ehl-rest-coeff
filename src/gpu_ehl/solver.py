@@ -49,7 +49,7 @@ def simulate_single_setup(
         ``(num_snapshots, ...)``.
     """
     Time_ini, _ = make_time_grid(delta_t, nt, nt_ini)
-    D_ini, V_ini = initial_gap_velocity(Time_ini, exponent)
+    D_ini, V_ini = initial_gap_velocity(Time_ini)
 
     w0 = jnp.zeros(r.shape[0], dtype=jnp.float32)
     p0 = jnp.zeros(r.shape[0], dtype=jnp.float32)
