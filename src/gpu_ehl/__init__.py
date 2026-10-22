@@ -13,7 +13,7 @@ from gpu_ehl.io import load_results_h5, save_results_h5
 from gpu_ehl.solver import simulate_single_setup
 from gpu_ehl.sweep import make_parameter_grid, run_parametric_sweep
 
-jax.config_update("jax_enable_x64", True)
+jax.config.update("jax_enable_x64", True)
 
 __all__ = [
     "SolverConfig",
