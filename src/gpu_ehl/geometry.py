@@ -18,7 +18,7 @@ def make_radial_grid(nr: int, lr: float) -> jnp.ndarray:
     jnp.ndarray
         1-D array of ``nr`` points from ``0.0`` to ``lr``.
     """
-    return jnp.linspace(0.0, lr, nr, dtype=jnp.float32)
+    return jnp.linspace(0.0, lr, nr, dtype=jnp.float64)
 
 
 def make_time_grid(
@@ -42,8 +42,8 @@ def make_time_grid(
         and ``Time`` covers ``[0, nt*delta_t]``.
     """
     t1 = -nt_ini * delta_t
-    Time_ini = jnp.linspace(t1, 0.0, nt_ini + 1, dtype=jnp.float32)
-    Time = jnp.linspace(0.0, delta_t * nt, nt + 1, dtype=jnp.float32)
+    Time_ini = jnp.linspace(t1, 0.0, nt_ini + 1, dtype=jnp.float64)
+    Time = jnp.linspace(0.0, delta_t * nt, nt + 1, dtype=jnp.float64)
     return Time_ini, Time
 
 

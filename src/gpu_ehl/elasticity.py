@@ -108,7 +108,7 @@ def load_or_build_kernel(
     nr: int,
     lr: float,
     cache_dir: Optional[Path] = None,
-    dtype=jnp.float32,
+    dtype=jnp.float64,
 ) -> jnp.ndarray:
     """Load a cached kernel matrix or build and cache it.
 
@@ -121,7 +121,7 @@ def load_or_build_kernel(
     cache_dir : Path or None, optional
         Custom cache directory.
     dtype
-        JAX dtype for the returned array (default: ``jnp.float32``).
+        JAX dtype for the returned array (default: ``jnp.float64``).
 
     Returns
     -------

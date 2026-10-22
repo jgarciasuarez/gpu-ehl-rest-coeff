@@ -161,8 +161,8 @@ def run_parametric_sweep(
         history dictionary.
     """
     S_flat, E_flat = make_parameter_grid()
-    S_flat = jnp.array(S_flat, dtype=jnp.float32)
-    E_flat = jnp.array(E_flat, dtype=jnp.float32)
+    S_flat = jnp.array(S_flat, dtype=jnp.float64)
+    E_flat = jnp.array(E_flat, dtype=jnp.float64)
 
     logger.info(
         "Starting parametric sweep: %d simulations", S_flat.shape[0]

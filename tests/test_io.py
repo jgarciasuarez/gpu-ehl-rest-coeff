@@ -13,16 +13,16 @@ def _make_minimal_results(num_cases: int, num_snapshots: int, nr: int) -> dict:
     shape = (num_cases, num_snapshots)
     w_shape = (num_cases, num_snapshots, nr)
     return {
-        "Force": jnp.ones(shape, dtype=jnp.float32),
-        "EnergyElastic": jnp.full(shape, 0.1, dtype=jnp.float32),
-        "Central_h": jnp.linspace(1.0, 0.5, num_snapshots, dtype=jnp.float32)[
+        "Force": jnp.ones(shape, dtype=jnp.float64),
+        "EnergyElastic": jnp.full(shape, 0.1, dtype=jnp.float64),
+        "Central_h": jnp.linspace(1.0, 0.5, num_snapshots, dtype=jnp.float64)[
             None, :
         ].repeat(num_cases, axis=0),
-        "Min_h": jnp.full(shape, 0.3, dtype=jnp.float32),
-        "D": jnp.full(shape, 1.0, dtype=jnp.float32),
-        "V": jnp.full(shape, -1.0, dtype=jnp.float32),
-        "w": jnp.zeros(w_shape, dtype=jnp.float32),
-        "p": jnp.zeros(w_shape, dtype=jnp.float32),
+        "Min_h": jnp.full(shape, 0.3, dtype=jnp.float64),
+        "D": jnp.full(shape, 1.0, dtype=jnp.float64),
+        "V": jnp.full(shape, -1.0, dtype=jnp.float64),
+        "w": jnp.zeros(w_shape, dtype=jnp.float64),
+        "p": jnp.zeros(w_shape, dtype=jnp.float64),
     }
 
 
@@ -33,12 +33,12 @@ def test_save_and_load_roundtrip(tmp_path: Path) -> None:
     nt = 40
     num_cases = 2
 
-    r_grid = jnp.linspace(0.0, 6.0, nr, dtype=jnp.float32)
-    time_grid = jnp.linspace(0.0, 1.0, nt + 1, dtype=jnp.float32)
+    r_grid = jnp.linspace(0.0, 6.0, nr, dtype=jnp.float64)
+    time_grid = jnp.linspace(0.0, 1.0, nt + 1, dtype=jnp.float64)
     results = _make_minimal_results(num_cases, num_snapshots, nr)
 
-    S_flat = jnp.array([100.0, 1000.0], dtype=jnp.float32)
-    E_flat = jnp.array([2.0, 2.0], dtype=jnp.float32)
+    S_flat = jnp.array([100.0, 1000.0], dtype=jnp.float64)
+    E_flat = jnp.array([2.0, 2.0], dtype=jnp.float64)
 
     out_path = tmp_path / "roundtrip.h5"
     save_results_h5(
@@ -62,7 +62,8 @@ def test_save_and_load_roundtrip(tmp_path: Path) -> None:
     np.testing.assert_array_almost_equal(
         case["Force"], np.asarray(results["Force"][0])
     )
-    np.testing.assert_array_equal(case["w_snapshots"].shape, (num_snapshots, nr))
+    np.testing.assert_array_equal(
+        case["w_snapshots"].shape, (num_snapshots, nr))
 
 
 def test_save_and_load_single_run(tmp_path: Path) -> None:
@@ -71,23 +72,23 @@ def test_save_and_load_single_run(tmp_path: Path) -> None:
     num_snapshots = 3
     nt = 40
 
-    r_grid = jnp.linspace(0.0, 6.0, nr, dtype=jnp.float32)
-    time_grid = jnp.linspace(0.0, 1.0, nt + 1, dtype=jnp.float32)
+    r_grid = jnp.linspace(0.0, 6.0, nr, dtype=jnp.float64)
+    time_grid = jnp.linspace(0.0, 1.0, nt + 1, dtype=jnp.float64)
 
     # Single-run results lack the leading case dimension.
     results = {
-        "Force": jnp.array([1.0, 2.0, 3.0], dtype=jnp.float32),
-        "EnergyElastic": jnp.array([0.1, 0.2, 0.3], dtype=jnp.float32),
-        "Central_h": jnp.array([1.0, 0.9, 0.8], dtype=jnp.float32),
-        "Min_h": jnp.array([0.5, 0.4, 0.3], dtype=jnp.float32),
-        "D": jnp.array([1.0, 0.95, 0.9], dtype=jnp.float32),
-        "V": jnp.array([-1.0, -0.5, 0.0], dtype=jnp.float32),
-        "w": jnp.zeros((num_snapshots, nr), dtype=jnp.float32),
-        "p": jnp.zeros((num_snapshots, nr), dtype=jnp.float32),
+        "Force": jnp.array([1.0, 2.0, 3.0], dtype=jnp.float64),
+        "EnergyElastic": jnp.array([0.1, 0.2, 0.3], dtype=jnp.float64),
+        "Central_h": jnp.array([1.0, 0.9, 0.8], dtype=jnp.float64),
+        "Min_h": jnp.array([0.5, 0.4, 0.3], dtype=jnp.float64),
+        "D": jnp.array([1.0, 0.95, 0.9], dtype=jnp.float64),
+        "V": jnp.array([-1.0, -0.5, 0.0], dtype=jnp.float64),
+        "w": jnp.zeros((num_snapshots, nr), dtype=jnp.float64),
+        "p": jnp.zeros((num_snapshots, nr), dtype=jnp.float64),
     }
 
-    S_flat = jnp.array([100.0], dtype=jnp.float32)
-    E_flat = jnp.array([2.0], dtype=jnp.float32)
+    S_flat = jnp.array([100.0], dtype=jnp.float64)
+    E_flat = jnp.array([2.0], dtype=jnp.float64)
 
     out_path = tmp_path / "single_run.h5"
     save_results_h5(
@@ -105,4 +106,5 @@ def test_save_and_load_single_run(tmp_path: Path) -> None:
     np.testing.assert_array_almost_equal(
         case["Force"], np.asarray(results["Force"])
     )
-    np.testing.assert_array_equal(case["w_snapshots"].shape, (num_snapshots, nr))
+    np.testing.assert_array_equal(
+        case["w_snapshots"].shape, (num_snapshots, nr))

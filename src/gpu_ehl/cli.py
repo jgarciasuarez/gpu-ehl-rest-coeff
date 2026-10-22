@@ -100,8 +100,8 @@ def cmd_single(args: argparse.Namespace) -> int:
     )
     history = jax.block_until_ready(history)
 
-    S_flat = jnp.array([args.stokes], dtype=jnp.float32)
-    E_flat = jnp.array([args.exponent], dtype=jnp.float32)
+    S_flat = jnp.array([args.stokes], dtype=jnp.float64)
+    E_flat = jnp.array([args.exponent], dtype=jnp.float64)
 
     save_results_h5(
         args.output,
