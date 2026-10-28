@@ -26,11 +26,12 @@
 | Metric | Value |
 | --- | --- |
 | Simulations | 130 (13 Stokes numbers × 10 shape exponents) |
+| Fine-resolution re-runs | 30 (St ≥ 3162.3 × 10 exponents, `NR = 6000`) |
 | Stokes numbers | `10^1` to `10^4` |
 | Shape exponents | `1.05` to `10.0` |
-| Radial grid | `NR = 3000`, domain `LR = 6.0` |
+| Radial grid | `NR = 3000` (reference), `NR = 6000` (high-St re-runs), domain `LR = 6.0` |
 | GPU hardware | NVIDIA H100 on the Kuma cluster at EPFL |
-| Final dataset | ~300 MB (`parametric_study_final.h5`, Zenodo) |
+| Final dataset | `parametric_study_float64_v2.h5` (Zenodo: coarse archive + fine-resolution high-St subset) |
 | Sample dataset | ~27 MB, 13 simulations (`data/sample/parametric_sample.h5`) |
 
 ## Quickstart
@@ -65,13 +66,13 @@ For GPU execution, ensure JAX is installed with the CUDA backend (`jax[cuda]`).
 
 ### 2. Download the full dataset
 
-The full dataset (`parametric_study_final.h5`, ~0.3 GB) is archived on Zenodo:
+The full dataset (`parametric_study_float64.h5`, ~0.3 GB) is archived on Zenodo:
 [![DOI 10.5281/zenodo.21995894](https://zenodo.org/badge/DOI/10.5281/zenodo.21995894.svg)](https://doi.org/10.5281/zenodo.21995894)
 
 ```bash
 python data/download_data.py
 # or point to a local copy
-export GPU_EHL_DATA=/path/to/parametric_study_final.h5
+export GPU_EHL_DATA=/path/to/parametric_study_float64.h5
 ```
 
 ### 3. Run a single simulation

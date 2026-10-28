@@ -101,6 +101,6 @@ def dynamic_step(
 
     EnergyElastic = -2.0 * jnp.sum(p_new * w_new * r * dr)
     Central_h = D_new - w_new[0]
-    Min_h = jnp.min(D_new + 0.5 * r ** exponent - w_new)
+    Min_h = jnp.min(D_new + 0.5 * r**exponent - w_new)
 
     return w_new, p_new, D_new, V_new, Force, EnergyElastic, Central_h, Min_h

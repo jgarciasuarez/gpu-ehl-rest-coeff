@@ -50,7 +50,7 @@ def _k_integrand(x: float, ri: float) -> float:
     m = 4.0 * ri * x / (ri + x) ** 2
     # Prevent m == 1.0 which causes an exact infinity.
     m = np.clip(m, 0.0, 1.0 - 1e-15)
-    return (x / (ri + x)) * scipy.special.ellipk(m) * (8.0 / np.pi ** 2)
+    return (x / (ri + x)) * scipy.special.ellipk(m) * (8.0 / np.pi**2)
 
 
 def build_kernel_matrix(nr: int, lr: float) -> np.ndarray:

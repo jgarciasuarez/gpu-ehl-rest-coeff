@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Profile a single GPU run and capture a JAX XPlane trace."""
+
 import json
 import shutil
 import time

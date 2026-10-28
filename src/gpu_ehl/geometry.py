@@ -69,6 +69,6 @@ def initial_gap_velocity(
     """
     D0 = 1.0
     t1 = Time_ini[0]
-    D_ini = D0 - Time_ini + (Time_ini ** 2) / (2.0 * t1)
+    D_ini = D0 - Time_ini + (Time_ini**2) / (2.0 * t1)
     V_ini = -1.0 + Time_ini / t1
     return D_ini, V_ini

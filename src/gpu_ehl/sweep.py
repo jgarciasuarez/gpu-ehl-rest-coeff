@@ -2,6 +2,7 @@
 
 import logging
 import math
+from typing import Optional, Sequence
 
 import jax
 import jax.numpy as jnp
@@ -10,35 +11,73 @@ from gpu_ehl.solver import simulate_single_setup
 
 logger = logging.getLogger(__name__)
 
+# Published grid values used when no explicit subset is requested.
+DEFAULT_SHAPES: tuple[float, ...] = (
+    1.05,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    9.0,
+    10.0,
+)
 
-def make_parameter_grid() -> tuple[jnp.ndarray, jnp.ndarray]:
-    """Create the final (Stokes, exponent) parameter grid.
 
-    Returns
-    -------
-    tuple[jnp.ndarray, jnp.ndarray]
-        ``(S_flat, E_flat)`` flat arrays of all parameter combinations.
-        Stokes ranges from ``10^1`` to ``10^4``; exponents are
-        ``[1.05, 2.0, 3.0, ..., 10.0]``.
-    """
+def _default_stokes_grid() -> jnp.ndarray:
+    """Return the published Stokes grid (13 values from ``10^1`` to ``10^4``)."""
     kk = 4
     nn = jnp.arange(1, 4)[:, None]
     jj = jnp.arange(kk)[None, :]
 
     vals = 10 ** (nn + jj / kk)
     vals = vals.reshape(-1)
-    stokes_test = jnp.append(vals, 10 ** 4)
-    shapes_test = jnp.array(
-        [1.05, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-    )
+    return jnp.append(vals, 10**4)
+
+
+def make_parameter_grid(
+    stokes_list: Optional[Sequence[float]] = None,
+    exponent_list: Optional[Sequence[float]] = None,
+) -> tuple[jnp.ndarray, jnp.ndarray]:
+    """Create the final (Stokes, exponent) parameter grid.
+
+    Parameters
+    ----------
+    stokes_list : sequence of float, optional
+        Explicit Stokes numbers. If ``None``, the published grid
+        (``10^1`` to ``10^4``, 13 values) is used.
+    exponent_list : sequence of float, optional
+        Explicit shape exponents. If ``None``, the published set
+        ``[1.05, 2.0, ..., 10.0]`` is used.
+
+    Returns
+    -------
+    tuple[jnp.ndarray, jnp.ndarray]
+        ``(S_flat, E_flat)`` flat arrays of all parameter combinations
+        (rectangular product of the two lists).
+    """
+    if stokes_list is not None and len(stokes_list) == 0:
+        raise ValueError("stokes_list must be non-empty when provided")
+    if exponent_list is not None and len(exponent_list) == 0:
+        raise ValueError("exponent_list must be non-empty when provided")
+
+    if stokes_list is None:
+        stokes_test = _default_stokes_grid()
+    else:
+        stokes_test = jnp.asarray(list(stokes_list), dtype=jnp.float64)
+
+    if exponent_list is None:
+        shapes_test = jnp.array(DEFAULT_SHAPES, dtype=jnp.float64)
+    else:
+        shapes_test = jnp.asarray(list(exponent_list), dtype=jnp.float64)
 
     S_grid, E_grid = jnp.meshgrid(stokes_test, shapes_test)
     return S_grid.flatten(), E_grid.flatten()
 
 
-def _batched_sim_factory(
-    nt: int, nt_ini: int, num_snapshots: int
-):
+def _batched_sim_factory(nt: int, nt_ini: int, num_snapshots: int):
     """Build a JIT-compiled, vmapped version of ``simulate_single_setup``."""
     batched_sim = jax.vmap(
         simulate_single_setup,
@@ -132,6 +171,8 @@ def run_parametric_sweep(
     nt_ini: int = 200,
     num_snapshots: int = 100,
     chunk_size: int = 10,
+    stokes_list: Optional[Sequence[float]] = None,
+    exponent_list: Optional[Sequence[float]] = None,
 ) -> tuple[dict[str, jnp.ndarray], jnp.ndarray, jnp.ndarray]:
     """Run the full parameter sweep on the GPU.
 
@@ -153,6 +194,10 @@ def run_parametric_sweep(
         Number of snapshots per simulation (default: 100).
     chunk_size : int, optional
         GPU batch size (default: 10).
+    stokes_list : sequence of float, optional
+        Explicit Stokes numbers; ``None`` uses the published grid.
+    exponent_list : sequence of float, optional
+        Explicit shape exponents; ``None`` uses the published set.
 
     Returns
     -------
@@ -160,13 +205,13 @@ def run_parametric_sweep(
         ``(results, S_flat, E_flat)`` where ``results`` is the concatenated
         history dictionary.
     """
-    S_flat, E_flat = make_parameter_grid()
+    S_flat, E_flat = make_parameter_grid(
+        stokes_list=stokes_list, exponent_list=exponent_list
+    )
     S_flat = jnp.array(S_flat, dtype=jnp.float64)
     E_flat = jnp.array(E_flat, dtype=jnp.float64)
 
-    logger.info(
-        "Starting parametric sweep: %d simulations", S_flat.shape[0]
-    )
+    logger.info("Starting parametric sweep: %d simulations", S_flat.shape[0])
     results = run_batched_chunks(
         S_flat,
         E_flat,

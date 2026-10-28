@@ -42,7 +42,7 @@ def build_schur_system(
     tuple[jnp.ndarray, jnp.ndarray]
         ``(S, RHS2)`` ready for ``jnp.linalg.solve(S, RHS2)``.
     """
-    h = D_old + 0.5 * r ** exponent - w_old
+    h = D_old + 0.5 * r**exponent - w_old
 
     r_in = r[1:-1]
     h_in = h[1:-1]
@@ -51,16 +51,16 @@ def build_schur_system(
 
     alpha = 3.0 * (0.5 * exponent * r_in ** (exponent - 1.0) - dw) + h_in / r_in
 
-    diag_p = 2.0 * h_in ** 3 + (h_in ** 2) * alpha * dr
-    over_p = -(h_in ** 3 + h_in ** 2 * alpha * dr)
-    under_p = -h_in ** 3
+    diag_p = 2.0 * h_in**3 + (h_in**2) * alpha * dr
+    over_p = -(h_in**3 + h_in**2 * alpha * dr)
+    under_p = -(h_in**3)
 
     zero = jnp.array([0.0], dtype=w_old.dtype)
     diag_full = jnp.concatenate([zero, diag_p, zero])  # length NR
     over_full = jnp.concatenate([zero, over_p, zero])  # length NR
     under_full = jnp.concatenate([zero, under_p, zero])  # length NR
 
-    coeff = dr ** 2 / (stokes * delta_t)
+    coeff = dr**2 / (stokes * delta_t)
     S = coeff * KernelMatrix
 
     NR = r.shape[0]

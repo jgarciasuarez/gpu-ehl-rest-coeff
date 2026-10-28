@@ -14,6 +14,14 @@ figures:
 	MPLBACKEND=Agg python paper/figures/scripts/fig_central_gap_scaling.py --no-show
 	MPLBACKEND=Agg python paper/figures/scripts/fig_exponent_summary.py --no-show
 	MPLBACKEND=Agg python paper/figures/scripts/fig_gap_velocity_field.py --no-show
+	MPLBACKEND=Agg python paper/figures/scripts/scaling_neck_power_laws.py --no-show
+	MPLBACKEND=Agg python paper/figures/scripts/scaling_neck_balances.py --no-show
+	MPLBACKEND=Agg python paper/figures/scripts/scaling_central_gap_sealing.py --no-show
+	MPLBACKEND=Agg python paper/figures/scripts/scaling_backflow_drainage.py --no-show
+	MPLBACKEND=Agg python paper/figures/scripts/scaling_dissipation_neck_velocity.py --no-show
+	MPLBACKEND=Agg python paper/figures/scripts/scaling_profile_collapse.py --no-show
+	MPLBACKEND=Agg python paper/figures/scripts/scaling_retraction.py --no-show
+	MPLBACKEND=Agg python paper/figures/scripts/scaling_adhesion.py --no-show
 
 sample:
 	python data/extract_sample.py

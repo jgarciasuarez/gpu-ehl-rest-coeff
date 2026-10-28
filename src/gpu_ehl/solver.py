@@ -78,15 +78,13 @@ def simulate_single_setup(
             )
             return (w_new, p_new, D_new, V_new)
 
-        new_state = jax.lax.fori_loop(
-            0, steps_per_snapshot, physics_step, carry
-        )
+        new_state = jax.lax.fori_loop(0, steps_per_snapshot, physics_step, carry)
         w_new, p_new, D_new, V_new = new_state
 
         F = 4.0 * jnp.sum(p_new * r * dr)
         E = -2.0 * jnp.sum(p_new * w_new * r * dr)
         hc = D_new - w_new[0]
-        hmin = jnp.min(D_new + 0.5 * r ** exponent - w_new)
+        hmin = jnp.min(D_new + 0.5 * r**exponent - w_new)
 
         history = {
             "Force": F,
@@ -101,8 +99,6 @@ def simulate_single_setup(
         return new_state, history
 
     init_carry = (w, p, D0_dyn, V0_dyn)
-    _, history = jax.lax.scan(
-        snapshot_step, init_carry, None, length=num_snapshots
-    )
+    _, history = jax.lax.scan(snapshot_step, init_carry, None, length=num_snapshots)
 
     return history

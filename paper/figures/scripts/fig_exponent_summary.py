@@ -9,6 +9,7 @@ import numpy as np
 
 from style import (
     add_figure_cli,
+    case_snap_times,
     compute_key_times_for_shape,
     load_common_grid,
     output_path,
@@ -42,12 +43,15 @@ def fit_exponent(h5_file, t_snaps, all_key_times, ST_TARGET_LIST, n):
             if kt is None or kt["t1_idx"] is None or kt["t2_idx"] is None:
                 continue
 
-            t_target = kt["t1"] + 0.5 * (kt["t2"] - kt["t1"])
-            it = int(np.argmin(np.abs(t_snaps - t_target)))
-
             grp = f[stokes_key][shape_key]
             if "Central_h" not in grp:
                 continue
+
+            # Version-2 fine cases carry their own time grid.
+            t_case = case_snap_times(grp, t_snaps)
+            t_target = kt["t1"] + 0.5 * (kt["t2"] - kt["t1"])
+            it = int(np.argmin(np.abs(t_case - t_target)))
+
             h = float(grp["Central_h"][it])
 
             St_list.append(St_parsed)

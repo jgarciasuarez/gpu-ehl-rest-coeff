@@ -97,16 +97,23 @@ def save_results_h5(
 def load_results_h5(filepath: Union[str, Path]) -> dict:
     """Load a results file into a nested dictionary.
 
+    In version-2 datasets the root-level grids describe the coarse reference
+    resolution, while fine-resolution case groups carry their own
+    ``r_grid``/``time_grid``/``snapshot_indices``. Those per-case grids are
+    exposed inside each case dictionary when present.
+
     Parameters
     ----------
     filepath : str or Path
-        Path to the HDF5 file.
+        Path to the results file.
 
     Returns
     -------
     dict
         Nested dictionary with keys ``r_grid``, ``time_grid``,
-        ``snapshot_indices``, and per-case groups.
+        ``snapshot_indices``, and per-case groups. Each case dictionary
+        contains the stored datasets plus, for fine cases, the per-case
+        ``r_grid``, ``time_grid`` and ``snapshot_indices``.
     """
     filepath = Path(filepath)
     data: dict = {}
@@ -124,7 +131,7 @@ def load_results_h5(filepath: Union[str, Path]) -> dict:
             data["cases"][group_name] = {}
             for case_name in grp:
                 case_grp = grp[case_name]
-                data["cases"][group_name][case_name] = {
+                case_data = {
                     "Force": case_grp["Force"][:],
                     "Central_h": case_grp["Central_h"][:],
                     "Min_h": case_grp["Min_h"][:],
@@ -134,5 +141,10 @@ def load_results_h5(filepath: Union[str, Path]) -> dict:
                     "D_snapshots": case_grp["D_snapshots"][:],
                     "E_elastic": case_grp["E_elastic"][:],
                 }
+                # Version-2 fine cases override the shared root grids.
+                for grid_name in ("r_grid", "time_grid", "snapshot_indices"):
+                    if grid_name in case_grp:
+                        case_data[grid_name] = case_grp[grid_name][:]
+                data["cases"][group_name][case_name] = case_data
 
     return data

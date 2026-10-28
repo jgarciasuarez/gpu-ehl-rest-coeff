@@ -59,11 +59,8 @@ def test_save_and_load_roundtrip(tmp_path: Path) -> None:
     assert "Stokes_1000.0" in data["cases"]
 
     case = data["cases"]["Stokes_100.0"]["Shape_2.0"]
-    np.testing.assert_array_almost_equal(
-        case["Force"], np.asarray(results["Force"][0])
-    )
-    np.testing.assert_array_equal(
-        case["w_snapshots"].shape, (num_snapshots, nr))
+    np.testing.assert_array_almost_equal(case["Force"], np.asarray(results["Force"][0]))
+    np.testing.assert_array_equal(case["w_snapshots"].shape, (num_snapshots, nr))
 
 
 def test_save_and_load_single_run(tmp_path: Path) -> None:
@@ -103,8 +100,5 @@ def test_save_and_load_single_run(tmp_path: Path) -> None:
 
     data = load_results_h5(out_path)
     case = data["cases"]["Stokes_100.0"]["Shape_2.0"]
-    np.testing.assert_array_almost_equal(
-        case["Force"], np.asarray(results["Force"])
-    )
-    np.testing.assert_array_equal(
-        case["w_snapshots"].shape, (num_snapshots, nr))
+    np.testing.assert_array_almost_equal(case["Force"], np.asarray(results["Force"]))
+    np.testing.assert_array_equal(case["w_snapshots"].shape, (num_snapshots, nr))

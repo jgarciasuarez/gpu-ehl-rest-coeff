@@ -10,6 +10,8 @@ import numpy as np
 
 from style import (
     add_figure_cli,
+    case_radial_grid,
+    case_snap_times,
     get_twilight_half,
     load_common_grid,
     output_path,
@@ -60,12 +62,17 @@ def main():
                 continue
 
             grp = f[stokes_key][shape_key]
+
+            # Version-2 fine cases carry their own grids.
+            r_case = case_radial_grid(grp, r)
+            t_case = case_snap_times(grp, t_snaps)
+
             w_snaps = np.array(grp["w_snapshots"])
             p_snaps = np.array(grp["p_snapshots"])
             D_snaps = np.array(grp["D_snapshots"])
             V = np.array(grp["V"])
 
-            h_all = D_snaps[:, None] + 0.5 * r ** n - w_snaps
+            h_all = D_snaps[:, None] + 0.5 * r_case ** n - w_snaps
 
             rebound_idx = np.argmax(V > 0)
             if rebound_idx == 0 and V[0] <= 0:
@@ -74,16 +81,16 @@ def main():
             if rebound_idx - 1 not in phase_indices and rebound_idx > 0:
                 phase_indices = np.append(phase_indices, rebound_idx - 1)
 
-            t_sel = t_snaps[phase_indices]
+            t_sel = t_case[phase_indices]
             norm = mcolors.Normalize(vmin=float(t_sel.min()), vmax=float(t_sel.max()))
 
             ax_top = axes[0, j]
             ax_bot = axes[1, j]
 
             for idx in phase_indices:
-                color = cmap(norm(t_snaps[idx]))
-                ax_top.plot(r, h_all[idx], color=color, linewidth=1.2)
-                ax_bot.plot(r, p_snaps[idx], color=color, linewidth=1.2)
+                color = cmap(norm(t_case[idx]))
+                ax_top.plot(r_case, h_all[idx], color=color, linewidth=1.2)
+                ax_bot.plot(r_case, p_snaps[idx], color=color, linewidth=1.2)
 
             ax_top.set_xlim(0.0, 1.3)
             ax_top.set_ylim(0.0, 0.5)

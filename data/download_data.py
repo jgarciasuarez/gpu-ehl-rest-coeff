@@ -17,7 +17,7 @@ from urllib.request import urlopen, urlretrieve
 logger = logging.getLogger(__name__)
 
 ZENODO_RECORD_ID: str = "21995894"
-DATASET_FILENAME: str = "parametric_study_final.h5"
+DATASET_FILENAME: str = "parametric_study_float64.h5"
 
 
 def _format_size(num_bytes: float) -> str:

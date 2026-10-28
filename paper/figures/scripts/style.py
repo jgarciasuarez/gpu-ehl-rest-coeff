@@ -8,7 +8,6 @@ from typing import Optional, Tuple
 
 import h5py
 import matplotlib
-import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
@@ -52,7 +51,8 @@ def get_twilight_half(second: bool = False) -> mcolors.LinearSegmentedColormap:
     twilight = matplotlib.colormaps["twilight"]
     if second:
         return mcolors.LinearSegmentedColormap.from_list(
-            "twilight_second_half", twilight(np.flip(np.linspace(0.0, 0.5, 256)))
+            "twilight_second_half", twilight(
+                np.flip(np.linspace(0.0, 0.5, 256)))
         )
     return mcolors.LinearSegmentedColormap.from_list(
         "twilight_first_half", twilight(np.linspace(0.0, 0.5, 256))
@@ -62,7 +62,9 @@ def get_twilight_half(second: bool = False) -> mcolors.LinearSegmentedColormap:
 # ------------------------------------------------------------------------------
 # 3. Color shading
 # ------------------------------------------------------------------------------
-def shade_by_st(rgb: Tuple[float, ...], st_norm: float) -> Tuple[float, float, float, float]:
+def shade_by_st(
+    rgb: Tuple[float, ...], st_norm: float
+) -> Tuple[float, float, float, float]:
     """Return a Stokes-shaded version of a base RGB color.
 
     Parameters
@@ -79,11 +81,11 @@ def shade_by_st(rgb: Tuple[float, ...], st_norm: float) -> Tuple[float, float, f
         Shaded RGBA color.
     """
     r, g, b = rgb[:3]
-    h, l, s = colorsys.rgb_to_hls(r, g, b)
-    lmax = min(0.85, l + 0.35)
-    lmin = max(0.15, l - 0.35)
+    hue, light, sat = colorsys.rgb_to_hls(r, g, b)
+    lmax = min(0.85, light + 0.35)
+    lmin = max(0.15, light - 0.35)
     new_l = lmax + (lmin - lmax) * st_norm
-    new_r, new_g, new_b = colorsys.hls_to_rgb(h, new_l, s)
+    new_r, new_g, new_b = colorsys.hls_to_rgb(hue, new_l, sat)
     return (new_r, new_g, new_b, 1.0)
 
 
@@ -96,7 +98,9 @@ def resolve_h5_path(user_path: Optional[str] = None) -> Path:
     Resolution order:
     1. ``user_path`` if provided.
     2. ``GPU_EHL_DATA`` environment variable.
-    3. Local ``data/sample/parametric_sample.h5``.
+    3. The full dataset ``data/parametric_study_float64.h5`` if it has been
+       downloaded (e.g. via ``data/download_data.py``).
+    4. Local ``data/sample/parametric_sample.h5``.
 
     Parameters
     ----------
@@ -116,7 +120,19 @@ def resolve_h5_path(user_path: Optional[str] = None) -> Path:
         return Path(env_path)
 
     repo_root = Path(__file__).resolve().parents[3]
-    return repo_root / "data" / "sample" / "parametric_sample.h5"
+
+    full_dataset = repo_root / "data" / "parametric_study_float64.h5"
+    if full_dataset.exists():
+        return full_dataset
+
+    sample = repo_root / "data" / "sample" / "parametric_sample.h5"
+    print(
+        f"NOTE: full dataset not found (expected {full_dataset.name} in "
+        "data/ or GPU_EHL_DATA unset); using the 13-case sample dataset. "
+        "Power-law fits will be degenerate; pass --h5-file or set "
+        "GPU_EHL_DATA for the full dataset."
+    )
+    return sample
 
 
 def load_common_grid(h5_file: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -139,6 +155,55 @@ def load_common_grid(h5_file: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
         snapshot_indices = np.array(f["snapshot_indices"])
         t_snaps = time_grid[snapshot_indices]
     return r, time_grid, t_snaps
+
+
+def case_radial_grid(grp: h5py.Group, r_root: np.ndarray) -> np.ndarray:
+    """Return the radial grid of a case group.
+
+    In version-2 datasets, fine-resolution case groups carry their own
+    ``r_grid``; these override the root-level (coarse reference) grid.
+
+    Parameters
+    ----------
+    grp : h5py.Group
+        Case group (``Stokes_*/Shape_*``).
+    r_root : np.ndarray
+        Root-level radial grid (coarse reference).
+
+    Returns
+    -------
+    np.ndarray
+        The radial grid on which this case was computed.
+    """
+    if "r_grid" in grp:
+        return np.asarray(grp["r_grid"])
+    return r_root
+
+
+def case_snap_times(grp: h5py.Group, t_snaps_root: np.ndarray) -> np.ndarray:
+    """Return the snapshot times of a case group.
+
+    In version-2 datasets, fine-resolution case groups carry their own
+    ``time_grid``/``snapshot_indices``; these override the root-level
+    (coarse reference) values.
+
+    Parameters
+    ----------
+    grp : h5py.Group
+        Case group (``Stokes_*/Shape_*``).
+    t_snaps_root : np.ndarray
+        Root-level snapshot times (coarse reference).
+
+    Returns
+    -------
+    np.ndarray
+        The snapshot times of this case.
+    """
+    if "time_grid" in grp and "snapshot_indices" in grp:
+        time_grid = np.asarray(grp["time_grid"])
+        snapshot_indices = np.asarray(grp["snapshot_indices"])
+        return time_grid[snapshot_indices]
+    return t_snaps_root
 
 
 # ------------------------------------------------------------------------------
@@ -195,10 +260,13 @@ def compute_key_times_for_shape(
             if "D_snapshots" not in g or "Force" not in g:
                 continue
 
+            # Version-2 fine cases carry their own time grid.
+            t_case = case_snap_times(g, t)
+
             D = np.asarray(g["D_snapshots"][:], dtype=float)
             F = np.asarray(g["Force"][:], dtype=float)
 
-            if len(D) != len(t) or len(F) != len(t):
+            if len(D) != len(t_case) or len(F) != len(t_case):
                 continue
 
             # t1: first time D reaches zero
@@ -208,25 +276,26 @@ def compute_key_times_for_shape(
             else:
                 s = np.sign(D)
                 cross = np.where(s[:-1] * s[1:] <= 0)[0]
-                t1_idx = int(cross[0] + 1) if cross.size else int(np.argmin(np.abs(D)))
-            t1 = float(t[t1_idx])
+                t1_idx = int(
+                    cross[0] + 1) if cross.size else int(np.argmin(np.abs(D)))
+            t1 = float(t_case[t1_idx])
 
             # t2: time of maximum force
             t2_idx = int(np.argmax(F))
-            t2 = float(t[t2_idx])
+            t2 = float(t_case[t2_idx])
 
             # t3: force returns to zero after peak
             t3_idx = None
             if t2_idx < len(F) - 1:
-                zeroF = np.where(np.abs(F[t2_idx + 1 :]) <= tol_zero)[0]
+                zeroF = np.where(np.abs(F[t2_idx + 1:]) <= tol_zero)[0]
                 if zeroF.size:
                     t3_idx = int(t2_idx + 1 + zeroF[0])
                 else:
                     sF = np.sign(F)
-                    crossF = np.where(sF[t2_idx:-1] * sF[t2_idx + 1 :] <= 0)[0]
+                    crossF = np.where(sF[t2_idx:-1] * sF[t2_idx + 1:] <= 0)[0]
                     if crossF.size:
                         t3_idx = int(t2_idx + crossF[0] + 1)
-            t3 = float(t[t3_idx]) if t3_idx is not None else None
+            t3 = float(t_case[t3_idx]) if t3_idx is not None else None
 
             # t4: inflection of total energy after relaxation
             t4_idx, t4 = None, None
@@ -234,7 +303,7 @@ def compute_key_times_for_shape(
                 E = np.asarray(g["E_elastic"][:], dtype=float)
                 V = np.asarray(g["V"][:], dtype=float)
 
-                if len(E) == len(t) and len(V) == len(t):
+                if len(E) == len(t_case) and len(V) == len(t_case):
                     Etot = E + 0.5 * V ** 2
                     s2 = np.diff(Etot, n=2)
 
@@ -251,7 +320,7 @@ def compute_key_times_for_shape(
                                 and s2_sign[k - 1] != s2_sign[k]
                             ):
                                 t4_idx = k + 1
-                                t4 = float(t[t4_idx])
+                                t4 = float(t_case[t4_idx])
                                 break
 
             # t5: D reaches one after relaxation
@@ -261,7 +330,7 @@ def compute_key_times_for_shape(
                 one = np.where(np.abs(D[start:] - 1.0) <= tol_one)[0]
                 if one.size:
                     t5_idx = int(start + one[0])
-                    t5 = float(t[t5_idx])
+                    t5 = float(t_case[t5_idx])
 
             key_times[St] = {
                 "t1_idx": t1_idx,
@@ -405,7 +474,8 @@ def reconstruct_gap_velocity(r, t, h, n_eta=51):
     h = np.asarray(h, dtype=float)
 
     if h.shape != (t.size, r.size):
-        raise ValueError(f"h must have shape {(t.size, r.size)}, got {h.shape}")
+        raise ValueError(
+            f"h must have shape {(t.size, r.size)}, got {h.shape}")
     if np.any(h <= 0):
         raise ValueError("The gap h must remain strictly positive.")
     if np.any(np.diff(r) <= 0) or np.any(np.diff(t) <= 0):
@@ -431,7 +501,8 @@ def reconstruct_gap_velocity(r, t, h, n_eta=51):
 
     z = E * H
     ur = 6.0 * Q / H * E * (1.0 - E)
-    uz = HT * (3.0 * E ** 2 - 2.0 * E ** 3) + 6.0 * Q * HR / H * E ** 2 * (1.0 - E)
+    uz = HT * (3.0 * E ** 2 - 2.0 * E ** 3) + \
+        6.0 * Q * HR / H * E ** 2 * (1.0 - E)
 
     return eta, z, ur, uz, q, ht, hr
 
@@ -455,12 +526,12 @@ def compute_flow_key_times(D: np.ndarray, F: np.ndarray) -> dict:
 
     t3_idx = None
     if t2_idx < len(F) - 1:
-        zeroF = np.where(np.abs(F[t2_idx + 1 :]) <= tol_zero)[0]
+        zeroF = np.where(np.abs(F[t2_idx + 1:]) <= tol_zero)[0]
         if zeroF.size:
             t3_idx = int(t2_idx + 1 + zeroF[0])
         else:
             sF = np.sign(F)
-            crossF = np.where(sF[t2_idx:-1] * sF[t2_idx + 1 :] <= 0)[0]
+            crossF = np.where(sF[t2_idx:-1] * sF[t2_idx + 1:] <= 0)[0]
             if crossF.size:
                 t3_idx = int(t2_idx + crossF[0] + 1)
 

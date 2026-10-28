@@ -16,6 +16,23 @@ from gpu_ehl.solver import simulate_single_setup
 from gpu_ehl.sweep import run_parametric_sweep
 
 
+def _parse_float_list(value: str) -> list[float]:
+    """Parse a comma-separated string of floats into a list.
+
+    Raises
+    ------
+    argparse.ArgumentTypeError
+        If the string is empty or contains non-numeric entries.
+    """
+    items = [v.strip() for v in value.split(",") if v.strip()]
+    if not items:
+        raise argparse.ArgumentTypeError("empty value list")
+    try:
+        return [float(v) for v in items]
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f"invalid float in list {value!r}") from exc
+
+
 def _setup_logging(verbose: bool) -> None:
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
@@ -124,16 +141,17 @@ def cmd_sweep(args: argparse.Namespace) -> int:
     device = jax.devices()[0]
     if device.platform == "cpu":
         logger.error(
-            "Parametric sweep is only supported on GPU. "
-            "Found device: %s",
+            "Parametric sweep is only supported on GPU. Found device: %s",
             device,
         )
         return 1
 
     logger.info(
-        "Running parametric sweep on %s (chunk_size=%d)",
+        "Running parametric sweep on %s (chunk_size=%d, stokes=%s, exponents=%s)",
         device.platform.upper(),
         args.chunk_size,
+        "published grid" if args.stokes_list is None else args.stokes_list,
+        "published set" if args.exponent_list is None else args.exponent_list,
     )
 
     kernel, r, dr = _build_kernel_and_grid(args)
@@ -148,6 +166,8 @@ def cmd_sweep(args: argparse.Namespace) -> int:
         nt_ini=args.nt_ini,
         num_snapshots=args.num_snapshots,
         chunk_size=args.chunk_size,
+        stokes_list=args.stokes_list,
+        exponent_list=args.exponent_list,
     )
 
     save_results_h5(
@@ -174,12 +194,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     single = subparsers.add_parser(
         "single", help="Run a single (Stokes, exponent) simulation"
     )
-    single.add_argument(
-        "--stokes", type=float, required=True, help="Stokes number"
-    )
-    single.add_argument(
-        "--exponent", type=float, required=True, help="Shape exponent"
-    )
+    single.add_argument("--stokes", type=float, required=True, help="Stokes number")
+    single.add_argument("--exponent", type=float, required=True, help="Shape exponent")
     single.add_argument(
         "--output",
         type=Path,
@@ -189,9 +205,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     _add_common_args(single)
     single.set_defaults(func=cmd_single)
 
-    sweep = subparsers.add_parser(
-        "sweep", help="Run the full GPU parametric sweep"
-    )
+    sweep = subparsers.add_parser("sweep", help="Run the full GPU parametric sweep")
     sweep.add_argument(
         "--output",
         type=Path,
@@ -203,6 +217,24 @@ def main(argv: Optional[list[str]] = None) -> int:
         type=int,
         default=10,
         help="Number of simulations per GPU batch",
+    )
+    sweep.add_argument(
+        "--stokes-list",
+        type=_parse_float_list,
+        default=None,
+        help=(
+            "Comma-separated Stokes numbers to simulate (subset sweep); "
+            "omitting it uses the published 13-value grid"
+        ),
+    )
+    sweep.add_argument(
+        "--exponent-list",
+        type=_parse_float_list,
+        default=None,
+        help=(
+            "Comma-separated shape exponents to simulate (subset sweep); "
+            "omitting it uses the published 10-value set"
+        ),
     )
     _add_common_args(sweep)
     sweep.set_defaults(func=cmd_sweep)

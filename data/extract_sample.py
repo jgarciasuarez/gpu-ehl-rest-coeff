@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract a small sample from parametric_study_final.h5 for CI and demos.
+"""Extract a small sample from parametric_study_float64.h5 for CI and demos.
 
 Selection rule:
 - For exponent n = 2.0, keep Stokes = 10, 100, 1000, 10000.
@@ -44,7 +44,7 @@ def extract_sample(
     Parameters
     ----------
     source : Path
-        Path to the full ``parametric_study_final.h5`` file.
+        Path to the full ``parametric_study_float64.h5`` file.
     destination : Path
         Path for the output sample file.
     reference_shape : float, optional
@@ -60,8 +60,7 @@ def extract_sample(
 
     # Sanity-check that the requested sample Stokes exist in the full grid.
     missing_stokes = [
-        s for s in SAMPLE_STOKES
-        if not any(abs(s - ss) < 1e-6 for ss in S_flat)
+        s for s in SAMPLE_STOKES if not any(abs(s - ss) < 1e-6 for ss in S_flat)
     ]
     if missing_stokes:
         logger.warning("Requested sample Stokes not in full grid: %s", missing_stokes)
@@ -111,14 +110,14 @@ def _default_source_path() -> Path:
 
     Resolution order:
     1. ``GPU_EHL_DATA`` environment variable.
-    2. ``data/parametric_study_final.h5`` relative to the repository root.
+    2. ``data/parametric_study_float64.h5`` relative to the repository root.
     """
     env_path = os.environ.get("GPU_EHL_DATA")
     if env_path:
         return Path(env_path)
 
     repo_root = Path(__file__).resolve().parents[1]
-    return repo_root / "data" / "parametric_study_final.h5"
+    return repo_root / "data" / "parametric_study_float64.h5"
 
 
 def main() -> int:
@@ -129,7 +128,7 @@ def main() -> int:
         "--source",
         type=Path,
         default=_default_source_path(),
-        help="Path to parametric_study_final.h5",
+        help="Path to parametric_study_float64.h5",
     )
     parser.add_argument(
         "--destination",

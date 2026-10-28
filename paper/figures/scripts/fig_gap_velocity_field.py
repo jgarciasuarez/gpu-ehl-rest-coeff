@@ -11,6 +11,8 @@ import numpy as np
 
 from style import (
     add_figure_cli,
+    case_radial_grid,
+    case_snap_times,
     compute_flow_key_times,
     load_common_grid,
     output_path,
@@ -64,6 +66,11 @@ def main():
                 f"Requested case {stokes_key}/{shape_key} not found in dataset."
             )
         grp = f[stokes_key][shape_key]
+
+        # Version-2 fine cases carry their own grids.
+        r = case_radial_grid(grp, r)
+        t_snaps = case_snap_times(grp, t_snaps)
+
         w_snaps = np.array(grp["w_snapshots"])
         D_snaps = np.array(grp["D_snapshots"])
         F = np.array(grp["Force"])

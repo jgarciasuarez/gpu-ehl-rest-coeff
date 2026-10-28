@@ -3,7 +3,7 @@
 The HDF5 output follows a hierarchical group structure that maps each
 simulation to its `(Stokes, shape)` parameters.
 
-## File: `parametric_study_final.h5`
+## File: `parametric_study_float64.h5`
 
 ### Root-level datasets
 
@@ -45,6 +45,46 @@ because the HDF5 uses the integer label `1.0` to represent `n = 1.05`.
 > **Note:** `Min_h` is written by the current version of `gpu_ehl.io.save_results_h5`.
 > The initial Zenodo release (DOI: 10.5281/zenodo.21995894) was produced with an
 > earlier output routine and therefore does not contain this field.
+
+## Version 2: mixed-resolution dataset
+
+Version 2 of the dataset (`parametric_study_float64_v2.h5`) replaces the
+highest-Stokes cases with fine-resolution re-runs (larger `nr`, smaller
+`delta_t`), because only high-Stokes impacts approach the spatial resolution
+limit (neck width ~ a few `dr`).
+
+Structure (extends the layout above):
+
+- Root-level `r_grid`, `time_grid`, `snapshot_indices` describe the
+  **coarse reference resolution** (as in version 1).
+- Every case group carries provenance attributes: `resolution`
+  (`"coarse"` or `"fine"`), `nr`, and `delta_t`.
+- **Fine-resolution case groups additionally store their own**
+  `r_grid`, `time_grid`, `snapshot_indices` **inside the group**, since the
+  root-level grids do not describe their resolution.
+- File-level attributes: `version`, `coarse_nr`, `coarse_delta_t`,
+  `fine_nr`, `fine_delta_t`, and `fine_cases` (JSON list of the re-run
+  group names).
+
+### Loading rules
+
+- Readers must use a case's own grid when the group contains
+  `r_grid`/`time_grid`, and fall back to the root-level grids otherwise.
+  This is implemented in:
+  - `gpu_ehl.io.load_results_h5` (per-case grids exposed in the case dict),
+  - `paper/figures/scripts/scaling_common.extract_scaling_data`,
+  - `paper/figures/scripts/style.py` (`case_radial_grid`, `case_snap_times`,
+    and `compute_key_times_for_shape`),
+  - `paper/figures/scripts/verify_scalings.py`.
+- Version-1 files are unaffected: they have no group-level grids, so all
+  readers fall back to the root-level grids.
+
+### Tools
+
+- `scripts/merge_fine_subset.py` builds the version-2 file from the
+  coarse archive and the fine-subset sweep, with built-in verification.
+- `scripts/check_fine_coarse_convergence.py` quantifies coarse-vs-fine
+  differences on the re-run subset.
 
 ## Sample dataset
 

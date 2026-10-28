@@ -9,6 +9,7 @@ import numpy as np
 
 from style import (
     add_figure_cli,
+    case_snap_times,
     compute_key_times_for_shape,
     get_plasma_capped,
     load_common_grid,
@@ -93,6 +94,9 @@ def main():
                 if "Central_h" not in grp or "V" not in grp or "Force" not in grp:
                     continue
 
+                # Version-2 fine cases carry their own time grid.
+                t_case = case_snap_times(grp, t_snaps)
+
                 Central_h = np.array(grp["Central_h"])
                 V = np.array(grp["V"])
                 F = np.array(grp["Force"])
@@ -102,9 +106,9 @@ def main():
                 )
                 color = shade_by_st(base_color, st_norm)
 
-                axes[0, j].plot(t_snaps, Central_h, color=color, lw=1.5)
-                axes[1, j].plot(t_snaps, V, color=color, lw=1.5)
-                axes[2, j].plot(t_snaps, F, color=color, lw=1.5)
+                axes[0, j].plot(t_case, Central_h, color=color, lw=1.5)
+                axes[1, j].plot(t_case, V, color=color, lw=1.5)
+                axes[2, j].plot(t_case, F, color=color, lw=1.5)
 
                 h, = axes[0, j].plot(
                     [], [], color=color, lw=1.5, label=f"{St_parsed:g}"
@@ -115,10 +119,10 @@ def main():
                 if kt is not None:
                     for tk, style in time_markers.items():
                         idx = kt.get(f"{tk}_idx", None)
-                        if idx is None or not (0 <= idx < len(t_snaps)):
+                        if idx is None or not (0 <= idx < len(t_case)):
                             continue
                         axes[0, j].plot(
-                            t_snaps[idx],
+                            t_case[idx],
                             Central_h[idx],
                             linestyle="None",
                             marker=style["marker"],
@@ -129,7 +133,7 @@ def main():
                             zorder=5,
                         )
                         axes[1, j].plot(
-                            t_snaps[idx],
+                            t_case[idx],
                             V[idx],
                             linestyle="None",
                             marker=style["marker"],
@@ -140,7 +144,7 @@ def main():
                             zorder=5,
                         )
                         axes[2, j].plot(
-                            t_snaps[idx],
+                            t_case[idx],
                             F[idx],
                             linestyle="None",
                             marker=style["marker"],
